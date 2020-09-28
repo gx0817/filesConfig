@@ -1,0 +1,83 @@
+#####Linux开放端口#####
+
+#1：安装iptables防火墙：
+sudo yum install iptables-services
+
+#如果防火墙放行了端口，但是仍然访问不到的话，可能是因为添加规则的时候，用的是iptables -A 选项，
+#这样，增加的规则会排列在 第6条 规则后面，虽然service iptables status显示放行了端口，
+#但是实际上，由于第六条规则的原因，新增加的这条并没有起作用。
+#改为使用iptables -I 插入规则即可，将规则添加的 第6条 之前，就可以生效了。
+
+#开放端口
+
+iptables  -I INPUT -m state --state NEW -m tcp -p tcp --dport 9090 -j ACCEPT
+iptables  -I INPUT -m state --state NEW -m tcp -p tcp --dport 22122 -j ACCEPT
+#保存上述规则
+service iptables save
+
+#开启服务
+systemctl restart iptables.service
+
+#查看端口是否开放
+/sbin/iptables -L -n
+查询已配置的端口
+netstat -ntpl
+
+#2：iptables文件路径：
+/etc/sysconfig/iptables
+
+
+#####Linux安装GCC#####
+yum install -y gcc-c++
+
+
+#####Linux搭建FastDFS#####
+教程：
+https://www.cnblogs.com/qiaolizhi/p/12461901.html（安装包）
+https://www.cnblogs.com/zeussbook/p/10757699.html（配置方法）
+
+#服务器IP：192.168.186.135
+tracker_server=192.168.209.121:22122 ＞ 192.168.186.135:22122
+#测试上传命令
+/usr/bin/fdfs_test /etc/fdfs/client.conf upload /etc/fdfs/anti-steal.jpg
+
+http://192.168.186.135:9090/group1/M00/00/00/wKi6h19QjaCAK5sdAABdrZgsqUU345_big.jpg
+#查看Fsfs占用的端口（正常应该有22122、23000两个端口）
+netstat -unltp|grep fdfs
+
+
+####启用redis服务端####
+/usr/local/redis/bin/redis-server /usr/local/redis/etc/redis.conf
+
+####FastDFS服务启动####
+#启动tracker
+fdfs_trackerd /etc/fdfs/tracker.conf start
+#启动storage
+fdfs_storaged /etc/fdfs/storage.conf start
+
+####启动nginx####
+ps -ef|grep nginx
+直接启动
+/usr/local/nginx/sbin/nginx
+kill -9 pid
+
+####启动Tomcat####
+cd /home/apache-tomcat-8.0.52/bin
+作为服务启动 nohup ./startup.sh &
+关闭tomcat服务 ./shutdown.sh
+#看是否已经有tomcat在运行了
+ps -ef |grep tomcat
+#如果有，用kill;
+kill -9 pid #pid 为相应的进程号
+
+
+启动项目
+命令1：cd /home
+打开jar包的位置路径，home就是这个jar包的路径
+命令2：nohup java -jar uls-admin.jar >temp.txt &
+启动jar包
+重启项目需先关闭
+命令3：ps -ef|grep uls-admin.jar
+查看jar包占用的端口
+命令4：kill -s 9 24271
+
