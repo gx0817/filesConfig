@@ -1,0 +1,51 @@
+#进入Nginx
+/usr/local/nginx
+#查询Nginx信息
+./nginx -V
+#例如：configure arguments: --add-module=/usr/local/fastdfs/fastdfs-nginx-module/src
+
+#configure arguments: 后面为现有模块
+#添加新模块直接在后面加新模块名称
+##例如：--add-module=/usr/local/fastdfs/fastdfs-nginx-module/src --with-http_ssl_module
+
+#进入Nginx源目录
+cd /usr/local/fastdfs/nginx-1.8.0
+
+#编译模块
+./configure --add-module=/usr/local/fastdfs/fastdfs-nginx-module/src --with-http_ssl_module
+#执行
+make
+
+#备份原有已安装好的nginx
+cp /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak
+
+/usr/local/nginx/sbin/nginx -s stop
+
+#把新的nginx程序覆盖旧的
+cp objs/nginx /usr/local/nginx/sbin/nginx
+
+#测试新的nginx程序是否正确
+/usr/local/nginx/sbin/nginx -t
+
+nginx: theconfiguration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx:configuration file /usr/local/nginx/conf/nginx.conf test issuccessful
+
+#平滑重启nginx
+/usr/local/nginx/sbin/nginx -s reload
+
+##报错nginx: [error] invalid PID number "" in "/usr/local/nginx/logs/nginx.pid"##
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+
+#查看ngixn版本极其编译参数
+/usr/local/nginx/sbin/nginx -V
+
+#去掉前缀
+location ^~/file-api/ {
+		#	proxy_set_header Host $host;
+		#	proxy_set_header  X-Real-IP        $remote_addr;
+		#	proxy_set_header  X-Forwarded-For  $proxy_add_x_forwarded_for;
+		#	proxy_set_header X-NginX-Proxy true;
+			
+		#	rewrite ^/file-api/(.*)$ /$1 break;
+			proxy_pass  http://127.0.0.1:9098/;
+        }
