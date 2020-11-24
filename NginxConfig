@@ -47,7 +47,7 @@ http {
 			try_files $uri $uri/ /index.html;
             index  index.html index.htm;
         }
-		location /prod-api/{#生产环境
+		location /prod-api/ {#生产环境
 			proxy_pass http://127.0.0.1:8080/;
 		}
 		location /dev-api/ {#开发环境
@@ -92,7 +92,11 @@ http {
     server {
         listen       9098;
         server_name  192.168.186.135;
-
+        client_max_body_size 10M;
+		client_body_buffer_size 10M;
+		location ~/group([0-9])/M00 {
+            ngx_fastdfs_module;
+        }
 
 		location ^~/ntocc-admin {
             alias /home/web/ntocc-admin/;
@@ -106,10 +110,19 @@ http {
             gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
             gzip_vary on;
                      
-            } 
+            }
         location /dev-api/ {
             proxy_pass   http://127.0.0.1:8080/;
         }
+		
+		location /api/ {
+            proxy_pass   http://127.0.0.1:8080/;
+        }
+		
+		location ^~/file-api/ {
+			proxy_pass  http://127.0.0.1:9098/;#去掉file-api前缀
+        }
+		
         error_page   500 502 503 504  /50x.html;
         location = /50x.html {
             root   html;
